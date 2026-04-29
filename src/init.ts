@@ -21,7 +21,7 @@ export async function runInit(opts: InitOptions): Promise<void> {
         type: opts.server ? null : "text",
         name: "serverUrl",
         message: "Server URL",
-        initial: existing?.serverUrl ?? "http://localhost:3000",
+        initial: existing?.serverUrl ?? "https://claude.dzapp.io.vn",
         validate: (v: string) => /^https?:\/\//.test(v) || "Must start with http(s)://",
       },
       {
