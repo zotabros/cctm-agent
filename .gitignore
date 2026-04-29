@@ -1,0 +1,32 @@
+node_modules
+.pnpm-store
+.next
+dist
+build
+out
+
+# env
+.env
+.env.local
+.env.*.local
+
+# prisma
+prisma/migrations/dev.db*
+
+# os
+.DS_Store
+Thumbs.db
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# editors
+.vscode
+.idea
+*.swp
+
+# coverage
+coverage
+.nyc_output

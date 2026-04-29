@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd template for CCTM collector (macOS).
+  Install:
+    1. Edit ProgramArguments paths below (node binary + collector entry).
+    2. cp scripts/cctm-collector.plist ~/Library/LaunchAgents/com.cctm.collector.plist
+    3. launchctl load ~/Library/LaunchAgents/com.cctm.collector.plist
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/com.cctm.collector.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.cctm.collector</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>/usr/local/lib/node_modules/@cctm/collector/dist/index.js</string>
+    <string>run</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/cctm-collector.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/cctm-collector.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

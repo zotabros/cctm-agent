@@ -1,0 +1,24 @@
+# systemd unit for CCTM collector (Linux).
+# Install:
+#   sudo cp scripts/cctm-collector.service /etc/systemd/system/cctm-collector.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now cctm-collector
+# Edit ExecStart paths to match your node + collector install location,
+# and replace User=youruser with the real account that owns ~/.claude/projects.
+
+[Unit]
+Description=CCTM Collector — Claude Code usage uploader
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=youruser
+ExecStart=/usr/bin/node /usr/lib/node_modules/@cctm/collector/dist/index.js run
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
