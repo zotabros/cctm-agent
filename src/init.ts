@@ -14,6 +14,7 @@ export async function runInit(opts: InitOptions): Promise<void> {
     console.log(pc.yellow("A config already exists; values will be overwritten."));
   }
 
+  const hasExistingToken = !!existing?.token;
   const responses = await prompts(
     [
       {
@@ -31,7 +32,17 @@ export async function runInit(opts: InitOptions): Promise<void> {
         validate: (v: string) => v.length > 0 || "Required",
       },
       {
-        type: opts.token ? null : "password",
+        type: opts.token || !hasExistingToken ? null : "confirm",
+        name: "replaceToken",
+        message: "Replace existing machine token?",
+        initial: false,
+      },
+      {
+        type: (_prev, values) => {
+          if (opts.token) return null;
+          if (!hasExistingToken) return "password";
+          return values.replaceToken ? "password" : null;
+        },
         name: "token",
         message: "Machine token (paste from dashboard)",
         validate: (v: string) => v.length >= 8 || "Token too short",
@@ -43,7 +54,7 @@ export async function runInit(opts: InitOptions): Promise<void> {
   const cfg: Config = {
     serverUrl: opts.server ?? (responses.serverUrl as string),
     label: opts.label ?? (responses.label as string),
-    token: opts.token ?? (responses.token as string),
+    token: opts.token ?? (responses.token as string) ?? existing?.token ?? "",
   };
   await saveConfig(cfg);
   console.log(pc.green(`Saved config. Run "cctm-collect run" to start the agent.`));
