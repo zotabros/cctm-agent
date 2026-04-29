@@ -16,7 +16,7 @@
     "clean": "rm -rf dist",
     "test": "vitest run",
     "prepublishOnly": "npm run clean && npm run build",
-    "prepare": "npm run build"
+    "prepare": "node scripts/prepare.mjs"
   },
   "dependencies": {
     "chokidar": "^3.6.0",

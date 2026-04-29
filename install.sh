@@ -84,16 +84,16 @@ main() {
   uninstall_existing
   cleanup_stale
 
-  if run_install "$GIT_SRC"; then
-    ok "Installed from GitHub."
+  if run_install "$PKG"; then
+    ok "Installed from npm registry."
   else
-    warn "GitHub install failed. Falling back to npm registry…"
+    warn "npm registry install failed. Trying GitHub source…"
     cleanup_stale
-    if run_install "$PKG"; then
-      ok "Installed from npm registry."
+    if run_install "$GIT_SRC"; then
+      ok "Installed from GitHub source."
     else
       log ""
-      err "Install failed from both GitHub and npm registry."
+      err "Install failed from npm registry and GitHub."
       log "    Try manually:"
       log "      ${BLD}rm -rf \"$SCOPE_DIR\"${RST}"
       log "      ${BLD}npm cache clean --force${RST}"

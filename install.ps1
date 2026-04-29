@@ -74,11 +74,11 @@ Cleanup-Stale
 Uninstall-Existing
 Cleanup-Stale
 
-$installed = Try-Install $GitSrc
+$installed = Try-Install $Pkg
 if (-not $installed) {
-  Warn "GitHub install failed. Falling back to npm registry…"
+  Warn "npm registry install failed. Trying GitHub source…"
   Cleanup-Stale
-  $installed = Try-Install $Pkg
+  $installed = Try-Install $GitSrc
 }
 
 if (-not $installed) {
