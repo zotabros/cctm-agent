@@ -9,9 +9,37 @@ interface InitOptions {
 }
 
 export async function runInit(opts: InitOptions): Promise<void> {
-  const existing = await loadConfig();
-  if (existing) {
-    console.log(pc.yellow("A config already exists; values will be overwritten."));
+  const loaded = await loadConfig();
+  let existing: Config | null = loaded;
+  if (loaded) {
+    console.log(pc.yellow("A config already exists."));
+    console.log(pc.dim(`  Server: ${loaded.serverUrl}`));
+    console.log(pc.dim(`  Label:  ${loaded.label}`));
+    console.log(pc.dim(`  Token:  ${loaded.token ? "(set)" : "(empty)"}`));
+    const noFlags = !opts.server && !opts.label && !opts.token;
+    if (noFlags) {
+      const { mode } = await prompts(
+        {
+          type: "select",
+          name: "mode",
+          message: "What would you like to do?",
+          choices: [
+            { title: "Keep existing config (exit)", value: "keep" },
+            { title: "Update some values (current values pre-filled)", value: "update" },
+            { title: "Start fresh (clear all and re-enter)", value: "fresh" },
+          ],
+          initial: 0,
+        },
+        { onCancel: () => process.exit(1) }
+      );
+      if (mode === "keep") {
+        console.log(pc.green("No changes."));
+        return;
+      }
+      if (mode === "fresh") {
+        existing = null;
+      }
+    }
   }
 
   const hasExistingToken = !!existing?.token;
