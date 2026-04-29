@@ -17,6 +17,7 @@ export const STATE_PATH = join(CONFIG_DIR, "state.json");
 export const QUEUE_PATH = join(CONFIG_DIR, "queue.jsonl");
 export const CLAUDE_PROJECTS = join(homedir(), ".claude", "projects");
 export const CLAUDE_CREDENTIALS = join(homedir(), ".claude", ".credentials.json");
+export const CLAUDE_CONFIG = join(homedir(), ".claude.json");
 
 export async function ensureConfigDir(): Promise<void> {
   await mkdir(CONFIG_DIR, { recursive: true });

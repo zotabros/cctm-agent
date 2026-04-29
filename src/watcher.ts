@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import chokidar from "chokidar";
 import pc from "picocolors";
 import type { IngestEvent } from "@cctm/shared";
-import { CLAUDE_CREDENTIALS, CLAUDE_PROJECTS } from "./config.js";
+import { CLAUDE_CONFIG, CLAUDE_CREDENTIALS, CLAUDE_PROJECTS } from "./config.js";
 import { getOffset, persist, setOffset } from "./state.js";
 import { parseJsonlLine } from "./parser.js";
 
@@ -12,22 +12,59 @@ interface WatcherDeps {
   onEvents: (events: IngestEvent[]) => void;
 }
 
-let cachedClaudeEmail: string | undefined;
+interface EmailCache {
+  email: string | undefined;
+  mtimeMs: number;
+  source: string;
+}
+let emailCache: EmailCache | null = null;
+
+function pickEmail(json: unknown): string | undefined {
+  if (!json || typeof json !== "object") return undefined;
+  const j = json as Record<string, unknown>;
+  const oauth = j.oauthAccount as Record<string, unknown> | undefined;
+  const account = j.account as Record<string, unknown> | undefined;
+  const candidate =
+    (oauth?.emailAddress as string | undefined) ??
+    (oauth?.email as string | undefined) ??
+    (account?.email as string | undefined) ??
+    (j.email as string | undefined) ??
+    (j.userEmail as string | undefined);
+  return typeof candidate === "string" && candidate.includes("@")
+    ? candidate
+    : undefined;
+}
+
+async function tryRead(path: string): Promise<{ email: string | undefined; mtimeMs: number } | null> {
+  try {
+    const st = await stat(path);
+    const raw = await readFile(path, "utf-8");
+    return { email: pickEmail(JSON.parse(raw)), mtimeMs: st.mtimeMs };
+  } catch {
+    return null;
+  }
+}
 
 async function readClaudeEmail(): Promise<string | undefined> {
-  if (cachedClaudeEmail !== undefined) return cachedClaudeEmail;
-  try {
-    const raw = await readFile(CLAUDE_CREDENTIALS, "utf-8");
-    const json = JSON.parse(raw) as Record<string, unknown>;
-    const email =
-      (json.email as string | undefined) ??
-      (json.userEmail as string | undefined) ??
-      ((json.account as { email?: string } | undefined)?.email);
-    cachedClaudeEmail = typeof email === "string" ? email : undefined;
-  } catch {
-    cachedClaudeEmail = undefined;
+  // Prefer ~/.claude.json (oauthAccount.emailAddress) — this is where Claude
+  // Code actually stores account identity. Fall back to .credentials.json for
+  // older installs. Re-read whenever the source file's mtime changes so a
+  // mid-session /login switch is reflected without restarting the agent.
+  for (const path of [CLAUDE_CONFIG, CLAUDE_CREDENTIALS]) {
+    const fresh = await tryRead(path);
+    if (!fresh) continue;
+    if (
+      emailCache &&
+      emailCache.source === path &&
+      emailCache.mtimeMs === fresh.mtimeMs
+    ) {
+      return emailCache.email;
+    }
+    emailCache = { email: fresh.email, mtimeMs: fresh.mtimeMs, source: path };
+    return fresh.email;
   }
-  return cachedClaudeEmail;
+  emailCache = null;
+  return undefined;
 }
 
 async function readNewLines(path: string): Promise<{ lines: string[]; newOffset: number }> {
