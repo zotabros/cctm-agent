@@ -4,7 +4,7 @@ CCTokenManager agent: watches Claude Code JSONL logs and uploads usage events to
 
 ## Install (macOS / Linux)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/cctm-agent/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zotabros/cctm-agent/main/install.sh | bash
 ```
 
 ## Pair with a server
