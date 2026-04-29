@@ -2,9 +2,10 @@
 
 CCTokenManager agent: watches Claude Code JSONL logs and uploads usage events to a [cctm-server](https://github.com/) instance.
 
-## Install (macOS / Linux)
+## Install
+Requires Node.js 20+.
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zotabros/cctm-agent/main/install.sh | bash
+npm install -g @zotabros/cctm-agent
 ```
 
 ## Pair with a server

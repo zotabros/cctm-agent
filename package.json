@@ -1,19 +1,21 @@
 {
-  "name": "cctm-agent",
+  "name": "@zotabros/cctm-agent",
   "version": "0.1.0",
-  "private": true,
+  "description": "CCTokenManager agent — watches Claude Code JSONL logs and uploads usage events to a cctm-server.",
   "type": "module",
   "bin": {
     "cctm-agent": "./dist/index.js"
   },
   "main": "./dist/index.js",
-  "files": ["dist"],
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
     "chokidar": "^3.6.0",
@@ -29,5 +31,16 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zotabros/cctm-agent.git"
+  },
+  "homepage": "https://github.com/zotabros/cctm-agent#readme",
+  "bugs": "https://github.com/zotabros/cctm-agent/issues",
+  "license": "MIT",
+  "keywords": ["claude-code", "telemetry", "agent", "cctm", "claude"],
+  "publishConfig": {
+    "access": "public"
   }
 }
