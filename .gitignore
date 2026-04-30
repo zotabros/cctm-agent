@@ -1,3 +1,6 @@
+# auto-generated build metadata
+src/buildinfo.ts
+
 node_modules
 .pnpm-store
 .next

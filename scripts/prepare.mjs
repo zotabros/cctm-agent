@@ -10,6 +10,9 @@ if (!existsSync(resolve(root, 'src/index.ts')) || !existsSync(resolve(root, 'tsc
   process.exit(0);
 }
 
+const buildinfo = spawnSync(process.execPath, ['scripts/buildinfo.mjs'], { stdio: 'inherit', cwd: root });
+if (buildinfo.status !== 0) process.exit(buildinfo.status ?? 1);
+
 const localTsc = resolve(root, 'node_modules/.bin/tsc');
 const args = ['-p', 'tsconfig.json'];
 
