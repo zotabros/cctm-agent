@@ -101,6 +101,5 @@ if (-not (Get-Command cctm-agent -ErrorAction SilentlyContinue)) {
 
 Write-Host ""
 Ok "Done. Next steps:"
-Write-Host "    cctm-agent init      # configure machine token + server"
-Write-Host "    cctm-agent start     # start the watcher"
+Write-Host "    cctm-agent             # open interactive menu (setup, start, stop, …)"
 Write-Host ""

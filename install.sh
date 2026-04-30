@@ -107,14 +107,13 @@ main() {
   if ! command -v cctm-agent >/dev/null 2>&1; then
     warn "Installed but 'cctm-agent' is not on PATH."
     log "    Bin location: $(npm bin -g 2>/dev/null || echo unknown)"
-    log "    Add it to PATH, then run: cctm-agent --help"
+    log "    Add it to PATH, then run: cctm-agent"
     exit 0
   fi
 
   log ""
   ok "Done. Next steps:"
-  log "    ${BLD}cctm-agent init${RST}      # configure machine token + server"
-  log "    ${BLD}cctm-agent start${RST}     # start the watcher"
+  log "    ${BLD}cctm-agent${RST}             # open interactive menu (setup, start, stop, …)"
   log ""
 }
 

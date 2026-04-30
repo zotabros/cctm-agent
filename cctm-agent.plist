@@ -16,8 +16,8 @@
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>/usr/local/lib/node_modules/@cctm/collector/dist/index.js</string>
-    <string>run</string>
+    <string>/usr/local/lib/node_modules/@zotabros/cctm-agent/dist/index.js</string>
+    <string>--daemon</string>
   </array>
   <key>RunAtLoad</key>
   <true/>

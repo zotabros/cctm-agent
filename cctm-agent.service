@@ -14,7 +14,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=youruser
-ExecStart=/usr/bin/node /usr/lib/node_modules/@cctm/collector/dist/index.js run
+ExecStart=/usr/bin/node /usr/lib/node_modules/@zotabros/cctm-agent/dist/index.js --daemon
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal

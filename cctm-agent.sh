@@ -259,7 +259,7 @@ cmd_start() {
   node_bin="$(resolve_node)"
   dist="$(ensure_built)"
   mkdir -p "$LOG_DIR"
-  nohup "$node_bin" "$dist" run >"$LOG_DIR/collector.log" 2>&1 &
+  nohup "$node_bin" "$dist" --daemon >"$LOG_DIR/collector.log" 2>&1 &
   echo $! > "$PID_FILE"
   sleep 1
   if kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
@@ -307,7 +307,7 @@ cmd_backfill() {
   NODE_BIN="$(resolve_node)"
   DIST="$(ensure_built)"
   printf "  ${C_DIM}Running one-shot backfill (this may take a few minutes)…${C_RESET}\n"
-  "$NODE_BIN" "$DIST" backfill
+  "$NODE_BIN" "$DIST" --backfill
 }
 
 cmd_status() {
@@ -342,7 +342,7 @@ cmd_run_foreground() {
   local node_bin dist
   node_bin="$(resolve_node)"
   dist="$(ensure_built)"
-  exec "$node_bin" "$dist" run
+  exec "$node_bin" "$dist" --daemon
 }
 
 install_launchd() {
@@ -360,7 +360,7 @@ install_launchd() {
   <array>
     <string>${node_bin}</string>
     <string>${dist}</string>
-    <string>run</string>
+    <string>--daemon</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -402,7 +402,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=${node_bin} ${dist} run
+ExecStart=${node_bin} ${dist} --daemon
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:${LOG_DIR}/collector.log
