@@ -5,7 +5,7 @@ import chokidar from "chokidar";
 import pc from "picocolors";
 import type { IngestEvent } from "@cctm/shared";
 import { CLAUDE_CONFIG, CLAUDE_CREDENTIALS, CLAUDE_PROJECTS } from "./config.js";
-import { getOffset, persist, setOffset } from "./state.js";
+import { getOffset, getPinnedEmail, persist, pinEmail, setOffset } from "./state.js";
 import { parseJsonlLine } from "./parser.js";
 
 interface WatcherDeps {
@@ -99,7 +99,14 @@ async function processFile(path: string, deps: WatcherDeps): Promise<void> {
   const sessionUuid = basename(path, ".jsonl");
   const projectDir = basename(dirname(path));
   const cwd = decodeProjectDir(projectDir);
-  const claudeUserEmail = await readClaudeEmail();
+  // Email is pinned on first sight of each JSONL file. This prevents a later
+  // /login switch (or a delayed flush after a long network outage) from
+  // re-attributing this session's events to whatever account is logged in now.
+  let claudeUserEmail = await getPinnedEmail(path);
+  if (!claudeUserEmail) {
+    claudeUserEmail = await readClaudeEmail();
+    if (claudeUserEmail) await pinEmail(path, claudeUserEmail);
+  }
 
   try {
     const { lines, newOffset } = await readNewLines(path);

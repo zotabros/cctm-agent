@@ -4,6 +4,7 @@ import pc from "picocolors";
 import type { IngestEvent } from "@cctm/shared";
 import { CLAUDE_PROJECTS, CLAUDE_CREDENTIALS, loadConfig } from "./config.js";
 import { parseJsonlLine } from "./parser.js";
+import { getPinnedEmail, pinEmail } from "./state.js";
 import { Uploader } from "./uploader.js";
 
 async function* walkJsonl(root: string): AsyncGenerator<string> {
@@ -54,7 +55,7 @@ export async function runBackfill(): Promise<void> {
     console.error(pc.red('No config. Run "cctm-collect init" first.'));
     process.exit(1);
   }
-  const claudeUserEmail = await readClaudeEmail();
+  const fallbackEmail = await readClaudeEmail();
   console.log(
     pc.bold("cctm-collect backfill") +
       pc.dim(` → ${cfg.serverUrl} as "${cfg.label}"`)
@@ -72,6 +73,16 @@ export async function runBackfill(): Promise<void> {
     const sessionUuid = basename(filePath, ".jsonl");
     const projectDir = basename(dirname(filePath));
     const cwd = decodeProjectDir(projectDir);
+
+    // Honour any pinned email captured live by the watcher. Only fall back to
+    // the currently-logged-in account for files that have never been seen
+    // (otherwise re-running backfill after switching accounts would silently
+    // re-attribute history to the new account — the bug this fix addresses).
+    let claudeUserEmail = await getPinnedEmail(filePath);
+    if (!claudeUserEmail && fallbackEmail) {
+      claudeUserEmail = fallbackEmail;
+      await pinEmail(filePath, fallbackEmail);
+    }
 
     let raw: string;
     try {

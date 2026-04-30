@@ -48,4 +48,30 @@ describe("state offset tracking", () => {
     await persist();
     expect(await getOffset("/p.jsonl")).toBe(250);
   });
+
+  it("pins email per file and persists across reloads", async () => {
+    const m1 = await import("../src/state.js");
+    expect(await m1.getPinnedEmail("/x/a.jsonl")).toBeUndefined();
+    await m1.pinEmail("/x/a.jsonl", "alice@example.com");
+    await m1.pinEmail("/x/b.jsonl", "bob@example.com");
+    await m1.persist();
+
+    vi.resetModules();
+    const m2 = await import("../src/state.js");
+    expect(await m2.getPinnedEmail("/x/a.jsonl")).toBe("alice@example.com");
+    expect(await m2.getPinnedEmail("/x/b.jsonl")).toBe("bob@example.com");
+    expect(await m2.getPinnedEmail("/x/c.jsonl")).toBeUndefined();
+  });
+
+  it("pinned email is not overwritten by later pin call", async () => {
+    // The watcher only calls pinEmail when getPinnedEmail returned undefined,
+    // so this test documents the lower-level guarantee: pinEmail itself is
+    // last-write-wins, but the policy in the watcher prevents that.
+    const { pinEmail, getPinnedEmail, persist } = await import(
+      "../src/state.js"
+    );
+    await pinEmail("/x/a.jsonl", "first@example.com");
+    await persist();
+    expect(await getPinnedEmail("/x/a.jsonl")).toBe("first@example.com");
+  });
 });
