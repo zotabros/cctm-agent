@@ -1,6 +1,12 @@
+import os from "node:os";
 import prompts from "prompts";
 import pc from "picocolors";
 import { loadConfig, saveConfig, type Config } from "./config.js";
+
+function defaultLabel(): string {
+  // Strip trailing ".local" / ".lan" so macOS "Dzs-Air.local" → "Dzs-Air".
+  return os.hostname().replace(/\.(local|lan|home|internal)$/i, "");
+}
 
 interface InitOptions {
   server?: string;
@@ -56,7 +62,7 @@ export async function runInit(opts: InitOptions): Promise<void> {
         type: opts.label ? null : "text",
         name: "label",
         message: "Machine label",
-        initial: existing?.label,
+        initial: existing?.label ?? defaultLabel(),
         validate: (v: string) => v.length > 0 || "Required",
       },
       {

@@ -1,6 +1,6 @@
 {
   "name": "@zotabros/cctm-agent",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "CCTokenManager agent — watches Claude Code JSONL logs and uploads usage events to a cctm-server.",
   "type": "module",
   "bin": {
