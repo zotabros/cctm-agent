@@ -17,6 +17,10 @@ function isBackfillInvocation(argv: string[]): boolean {
   return argv.includes("--backfill");
 }
 
+function isInventoryInvocation(argv: string[]): boolean {
+  return argv.includes("--inventory");
+}
+
 function isVersionFlag(argv: string[]): boolean {
   return argv.includes("--version") || argv.includes("-v");
 }
@@ -46,6 +50,20 @@ async function runDaemon(): Promise<void> {
     onEvents: (events) => uploader.push(events),
   });
 
+  // Inventory: upload once on start, then every 24h.
+  const { uploadInventory } = await import("./inventory.js");
+  const tickInventory = async (): Promise<void> => {
+    try {
+      const r = await uploadInventory(cfg.serverUrl, cfg.token);
+      if (!r.ok) console.error(pc.dim(`[inventory] upload failed (${r.status})`));
+    } catch (e) {
+      console.error(pc.dim(`[inventory] error: ${(e as Error).message}`));
+    }
+  };
+  void tickInventory();
+  const inventoryTimer = setInterval(() => void tickInventory(), 24 * 60 * 60 * 1000);
+  inventoryTimer.unref();
+
   const shutdown = async (): Promise<void> => {
     console.log(pc.dim("\n[main] flushing..."));
     await uploader.flush();
@@ -71,6 +89,23 @@ async function main(): Promise<void> {
   if (isBackfillInvocation(argv)) {
     const { runBackfill } = await import("./backfill.js");
     await runBackfill();
+    return;
+  }
+  if (isInventoryInvocation(argv)) {
+    const cfg = await loadConfig();
+    if (!cfg) {
+      console.error(pc.red("No config. Run cctm-agent (without flags) to set up first."));
+      process.exit(1);
+    }
+    const { uploadInventory } = await import("./inventory.js");
+    const result = await uploadInventory(cfg.serverUrl, cfg.token);
+    if (result.ok) {
+      console.log(pc.green("✓ Inventory snapshot uploaded."));
+      console.log(pc.dim(result.body));
+    } else {
+      console.error(pc.red(`✗ Upload failed (${result.status}): ${result.body}`));
+      process.exit(1);
+    }
     return;
   }
   if (!process.stdout.isTTY) {
